@@ -161,6 +161,31 @@ async def from_heig_command(update: Update, context: CallbackContext):
     message = await api_call(from_input, to_input)
     await update.message.reply_text(message, parse_mode='HTML')
 
+# TODO
+## define buttons
+#button_renens = InlineKeyboardButton(text="Renens", callback_data="renens")
+#button_lausanne = InlineKeyboardButton(text="Lausanne-Flon", callback_data="lausanne")
+#keyboard_inline = InlineKeyboardMarkup().add(renens, lausanne)
+#
+#async def check_button(call: types.CallbackQuery):
+#   from_input = "Ecublens VD, EPFL"
+#   if call.data == "renens":
+#       message = await api_call(from_input, "Renens VD")
+#       await update.message.reply_text(message, parse_mode='HTML')
+#   if call.data == "lausanne":
+#       message = await api_call(from_input, "Lausanne-Flon, Gare")
+#       await update.message.reply_text(message, parse_mode='HTML')
+#   await call.answer()
+#
+## define options to leave epfl command
+#async def leave_epfl_command(update: Update, context: CallbackContext):
+#    from_input = "Ecublens VD, EPFL"
+#    await message.reply("Which direction ?", reply_markup = keyboard_inline)
+#    # TODO : input selon bouton (renens ou lausanne)
+#    to_input = ?
+#    message = await api_call(from_input, to_input)
+#    await update.message.reply_text(message, parse_mode='HTML')
+
 def main():
     token = BOT_TOKEN
     app = ApplicationBuilder().token(token).concurrent_updates(True).read_timeout(30).write_timeout(30).build()
@@ -175,6 +200,8 @@ def main():
     app.add_handler(CommandHandler("epfl_bottens", from_epfl_command))
     app.add_handler(CommandHandler("bottens_heig", to_heig_command))
     app.add_handler(CommandHandler("heig_bottens", from_heig_command))
+
+    #app.add_handler(CommandHandler("leave_EPFL", leave_epfl_command))
 
     app.add_handler(MessageHandler(filters.COMMAND, unknown_command))
     app.add_handler(MessageHandler(filters.TEXT, unknown_command))
