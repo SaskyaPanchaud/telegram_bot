@@ -24,6 +24,14 @@ async def unknown_command(update: Update, context: CallbackContext) -> None:
     if chat:
         await context.bot.send_message(chat_id = chat.id, text = "Try \"/travel <departure> <destination>\" or \"/travel <aller_epfl/retour_epfl/aller_heig/retour_heig>\" !")
 
+# define message construction
+async def addToMessage(title, content):
+    return f"\n{title} : {content}\n"
+
+# define step construction
+async def addToStep(title, content):
+    return f"      {title} : {content}\n"
+
 # define api call
 async def api_call(from_input, to_input):
     # contact with api
@@ -36,33 +44,61 @@ async def api_call(from_input, to_input):
         return "INVALID TRAVEL"
 
     # message construction
+    message = ""
+
     # departure
-    time = datetime.strptime(json_resp['connections'][0].get('from').get('departure'), '%Y-%m-%dT%H:%M:%S%z')
-    message = f"\nDeparture : {time.strftime("%X")}\n"
+    departure = "Departure"
+    departure_time = datetime.strptime(json_resp['connections'][0].get('from').get('departure'), '%Y-%m-%dT%H:%M:%S%z').strftime("%X")
+    message += await addToMessage(departure, departure_time)
+
     # duration
-    duration = json_resp['connections'][0].get('duration')
-    message += f"Duration : {duration}\n"
+    duration = "Duration"
+    duration_time = json_resp['connections'][0].get('duration')
+    message += await addToMessage(duration, duration_time)
+
     # step
-    message += "With :\n"
-    step = ""
+    transport = "With"
+    step = "\n"
     for section in json_resp['connections'][0].get('sections', []):
         journey = section.get('journey')
         if journey:
+
             # construction category + number
             category = journey['category']
             number = journey['number']
-            step += f"  - {category}{number}:\n"
-            # construction from + to
-            tmp_from = section.get('departure')['station'].get('name')
-            tmp_from_time = datetime.strptime(section.get('departure').get('departure'), '%Y-%m-%dT%H:%M:%S%z').strftime("%X")
-            step += f"      from : {tmp_from} - {tmp_from_time}\n"
-            tmp_to = section.get('arrival').get('station').get('name')
-            tmp_to_time = datetime.strptime(section.get('arrival').get('arrival'), '%Y-%m-%dT%H:%M:%S%z').strftime("%X")
-            step += f"      to : {tmp_to} - {tmp_to_time}\n"
+            step += f"  - {category}{number} :\n"
+
+            # construction from
+            from_title = "from"
+            from_name = section.get('departure')['station'].get('name')
+            from_time = datetime.strptime(section.get('departure').get('departure'), '%Y-%m-%dT%H:%M:%S%z').strftime("%X")
+            from_platform = section.get('departure').get('platform')
+            from_platform_content = f" / {from_platform}" if from_platform else ""
+            from_content = f"{from_name}{from_platform_content} - {from_time}"
+            step += await addToStep(from_title, from_content)
+            
+            # construction to
+            to_title = "to"
+            to_name = section.get('arrival')['station'].get('name')
+            to_time = datetime.strptime(section.get('arrival').get('arrival'), '%Y-%m-%dT%H:%M:%S%z').strftime("%X")
+            to_platform = section.get('arrival').get('platform')
+            to_platform_content = f" / {to_platform}" if to_platform else ""
+            to_content = f"{to_name}{to_platform_content} - {to_time}"
+            step += await addToStep(to_title, to_content)
+
             # construction time
-            tmp_time_elasped = datetime.fromtimestamp(section.get('arrival').get('arrivalTimestamp') - section.get('departure').get('departureTimestamp'), tz=timezone.utc).strftime("%X")
-            step += f"      time : {tmp_time_elasped}\n"
-    message += step
+            time = "time"
+            time_elasped = datetime.fromtimestamp(section.get('arrival').get('arrivalTimestamp') - section.get('departure').get('departureTimestamp'), tz=timezone.utc).strftime("%X")
+            step += await addToStep(time, time_elasped)
+        else:
+            # construction walk
+            step += f"  - walk :\n"
+            time = "time"
+            time_elasped = section.get('walk').get('duration') / 60
+            time_elasped_content = f"{time_elasped} minutes"
+            step += await addToStep(time, time_elasped_content)
+
+    message += await addToMessage(transport, step)
 
     return message
 

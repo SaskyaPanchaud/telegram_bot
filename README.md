@@ -8,8 +8,8 @@ The bot *@discovery2024_bot* uses the [Swiss public transport API](https://trans
 - active venv with `python3 -m venv telegram_bots` and execute bot with `<path_to_venv>/python main.py`
 - predefined commands :
 ```
-aller_epfl - maison -> EPFL
-retour_epfl - EPFL -> maison
-aller_heig - -> maison -> HEIG
-retour_heig - -> HEIG -> maison
+bottens_epfl - Bottens → EPFL
+epfl_bottens - EPFL → Bottens
+bottens_heig - Bottens → HEIG-VD
+heig_bottens - HEIG-VD → Bottens
 ```
