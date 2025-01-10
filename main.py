@@ -46,7 +46,7 @@ async def start_command(update: Update, _: CallbackContext):
 async def about_command(update: Update, _: CallbackContext):
     log_user_activity(update)
     await update.message.reply_text(
-        "Version : 2.0\nSource : https://transport.opendata.ch/"
+        "Version : 2.0\nData source : https://transport.opendata.ch/\nCode source : https://github.com/SaskyaPanchaud/telegram_bot\n"
     )
 
 
@@ -96,9 +96,14 @@ async def api_call_general(from_input, to_input):
         departure_time_casted = departure_time.strftime("%X")
         now = datetime.now(departure_time.tzinfo)
         time_diff = round((departure_time - now).total_seconds() / 60)
-        plural = "s" if time_diff > 1 else ""
+        hour = 0 if time_diff < 60 else (int) (time_diff / 60)
+        hour_plural = "s" if hour > 1 else ""
+        minute = time_diff % 60
+        minute_plural = "s" if minute > 1 else ""
+        time_print = f"{hour} hour{hour_plural} and " if hour != 0 else ""
+        time_print += f"{minute} minute{minute_plural}"
         message += (
-            f"Departure in about {time_diff} minute{plural} ({departure_time_casted})\n"
+            f"Departure in about {time_print} ({departure_time_casted})\n"
         )
         # duration
         duration_time = connection.get("duration")
@@ -125,7 +130,7 @@ async def api_call_general(from_input, to_input):
                 from_platform = section.get("departure").get("platform")
                 from_platform_content = f" / {from_platform}" if from_platform else ""
                 from_content = f"{from_name}{from_platform_content} - {from_time}"
-                step += await addToStep("from", from_content)
+                step += await addToStep("From", from_content)
                 # construction to
                 to_name = section.get("arrival")["station"].get("name")
                 to_time = datetime.strptime(
@@ -134,16 +139,14 @@ async def api_call_general(from_input, to_input):
                 to_platform = section.get("arrival").get("platform")
                 to_platform_content = f" / {to_platform}" if to_platform else ""
                 to_content = f"{to_name}{to_platform_content} - {to_time}"
-                step += await addToStep("to", to_content)
+                step += await addToStep("To", to_content)
                 # construction time
                 time_elasped = datetime.fromtimestamp(
                     section.get("arrival").get("arrivalTimestamp")
                     - section.get("departure").get("departureTimestamp"),
                     tz=timezone.utc,
                 ).strftime("%X")
-                if time_elasped.startswith("00:"):
-                    time_elasped = time_elasped[3:]
-                step += await addToStep("time", time_elasped)
+                step += await addToStep("Time", time_elasped)
             else:
                 # construction walk
                 step += f"  • walk :\n"
@@ -227,6 +230,8 @@ async def api_call_from_epfl(to_input):
         )
         now = datetime.now(departure_time.tzinfo)
         time_diff = round((departure_time - now).total_seconds() / 60)
+        if time_diff < 0:
+            continue
         if i == 0:
             message += f"Dans {time_diff}'"
         elif i == len(json_resp["connections"]) - 1:
