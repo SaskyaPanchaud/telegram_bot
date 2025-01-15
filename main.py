@@ -31,15 +31,15 @@ def log_user_activity(update: Update):
     message = update.message.text if update.message else None
     callback_data = update.callback_query.data if update.callback_query else None
     if message:
-        logger.info(f"Message from user {user.id} in chat {chat.id}: {message}")
+        logger.info(f"Message from user {user.id} in chat {chat.id} : {message}")
     elif callback_data:
-        logger.info(f"Callback from user {user.id} in chat {chat.id}: {callback_data}")
+        logger.info(f"Callback from user {user.id} in chat {chat.id} : {callback_data}")
 
 
 async def start_command(update: Update, _: CallbackContext):
     log_user_activity(update)
     await update.message.reply_text(
-        'This bot can be used to travel around Switzerland with public transport.\n• type "/travel <departure> <destination>" to use it\n• type /about to acess some documentation\nLet\'s do it !'
+        'This bot can be used to travel around Switzerland with public transport.\n• type "/travel <departure> <destination>" to use it\n• type /about to access some documentation\nLet\'s do it!'
     )
 
 
@@ -59,7 +59,7 @@ async def unknown_command(update: Update, context: CallbackContext):
     log_user_activity(update)
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text='Try "/travel <departure> <destination>" !',
+        text='Try "/travel <departure> <destination>"!',
     )
 
 
@@ -249,7 +249,7 @@ async def leave_epfl_command(update: Update, _: CallbackContext):
         [InlineKeyboardButton(text="Lausanne", callback_data="lausanne")],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Which direction ?", reply_markup=reply_markup)
+    await update.message.reply_text("Which direction?", reply_markup=reply_markup)
 
 
 async def button(update: Update, _: CallbackContext):
@@ -292,7 +292,7 @@ def main():
 
     app.add_handler(CallbackQueryHandler(button))
 
-    print("Telegram Bot started !", flush=True)
+    print("Telegram Bot started!", flush=True)
 
     app.run_polling()
 
